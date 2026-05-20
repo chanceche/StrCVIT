@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+StrCVIT_dataset/
+checkpoints/
+results/
+outputs/
+runs/
+wandb/
+work_dirs/
+cache/

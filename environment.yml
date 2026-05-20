@@ -1,0 +1,10 @@
+name: strcvit
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - jq
+  - ripgrep
+  - pip:
+      - "-e .[all]"

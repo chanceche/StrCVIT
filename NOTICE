@@ -1,0 +1,9 @@
+StrCVIT Release
+
+This repository contains the released StrCVIT training and evaluation code.
+Model weights, trained adapters, logs, generated results, cached outputs, raw
+images, and original upstream annotations are not included.
+
+Third-party framework code, dependency names, benchmark names, dataset names,
+and model names are referenced where needed to run or describe the experiments.
+Their upstream licenses and access terms remain applicable.
