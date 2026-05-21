@@ -137,7 +137,7 @@ def create_multimodal_optimizer(args: 'TrainingArguments', model, dataset):
     """ViT/Aligner/LLM use different learning rates."""
     decay_parameters = set(Trainer.get_decay_parameter_names(None, model))
     model_arch = model.model_meta.model_arch
-    # 模型更改要同步更新这里的get_param_startswith
+    # If the model changes, update get_param_startswith here
     vit_parameters = get_param_startswith(model, model_arch.vision_tower, model_arch.aligner)
     aligner_parameters = get_param_startswith(model, model_arch.aligner)
     llm_parameters = get_param_startswith(model, model_arch.language_model)

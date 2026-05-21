@@ -441,7 +441,7 @@ for m in metrics:
     print("{title}: {score:.2f}{suffix}".format(title = m.capitalize(), score = scores[m], 
         suffix = " (lower is better)" if m == "distribution" else "%"))
     
-    #将结果写入文件
+    # Write results to file
     if args.output_dir is not None:
         output_file = os.path.join(args.output_dir, 'Result.text')
         with open(output_file, 'a') as f:
@@ -462,7 +462,7 @@ for m, mPrintName in detailedMetrics:
         # print score
         print("  {title}: {score:.2f}{suffix} ({amount} questions)".format(title = tName, 
             score = scores[m][t][0], suffix = "%", amount = scores[m][t][1]))    
-        #将结果写入文件
+        # Write results to file
         if args.output_dir is not None:
             output_file = os.path.join(args.output_dir, 'Result.text')
             with open(output_file, 'a') as f:

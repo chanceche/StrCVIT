@@ -504,7 +504,7 @@ class Template(ProcessorMixin):
         chosen = inputs.chosen
         if self.task_type == 'causal_lm':
             if self.mode in {'train', 'pt', 'vllm', 'lmdeploy', 'sglang'}:
-                # 编码
+                # Encode
                 encoded = self._encode_truncated(chosen)
             elif self.mode == 'rlhf':
                 encoded = self._rlhf_encode(inputs)
@@ -966,7 +966,7 @@ class Template(ProcessorMixin):
                 token_list = self._tokenize(context)
             else:
                 token_list = context
-            # 直接拼接
+            # Concatenate directly
             input_ids += token_list
             if loss_scale_list[i] > 0.0:
                 labels += token_list
@@ -1224,7 +1224,7 @@ class Template(ProcessorMixin):
                 if value:
                     encoded[key] = value
         else:
-            # 整个输入编码，图像使用占位符
+            # Encode full input; use placeholders for images
             encoded = self._encode(inputs)
         input_ids = encoded.get('input_ids')
         labels = encoded.get('labels')
@@ -1266,34 +1266,34 @@ class Template(ProcessorMixin):
     
     def _extract_user_text_embeddings(self, inputs: StdTemplateInputs) -> torch.Tensor:
         """
-        从 inputs.messages 中提取 user 的文本，
-        拼成一段字符串后，用 self._tokenize 得到 token ids（不是 embedding）
+        Extract user text from inputs.messages,
+        join into a string, then use self._tokenize to get token ids (not embeddings).
         """
 
-        # 1. 提取 user 文本
+        # 1. Extract user text
         user_texts: List[str] = []
         for m in inputs.messages:
             if m.get("role") != "user":
                 continue
             text = m.get("content") or ""
-            # 去掉 <image> 占位符
+            # Remove <image> placeholders
             text = re.sub(r"<image>\s*", "", text)
             text = text.strip()
             if text:
                 user_texts.append(text)
 
-        # 2. 拼成一句 / 一段
-        # 用换行而不是空格，语义更清晰，也方便后续 debug
+        # 2. Join into one string
+        # Use newlines instead of spaces for clarity and easier debugging
         routing_text = "\n".join(user_texts)
 
-        # 3. tokenize（注意：不是 embedding）
-        # self._tokenize 一般返回 input_ids（list[int] 或 tensor）
+        # 3. Tokenize (note: not embedding)
+        # self._tokenize usually returns input_ids (list[int] or tensor)
         text_ids = self._tokenize(routing_text)
 
         return text_ids
 
     def _encode(self, inputs: StdTemplateInputs) -> Dict[str, Any]:
-        # 文本inputs深拷贝，避免被修改
+        # Deep-copy text inputs to avoid mutation
         inputs.messages = deepcopy(inputs.messages)
         text_ids = self._extract_user_text_embeddings(inputs)
         template_backend = self.template_backend
@@ -1321,7 +1321,7 @@ class Template(ProcessorMixin):
             if isinstance(encoded['prompt_loss_scale'], list):
                 loss_scale = encoded['prompt_loss_scale'] + encoded['answer_loss_scale']
         else:
-            # 编码经过模板处理后的问题和答案
+            # Encode questions and answers after template processing
             res_context_list, loss_scale_list = self._simplify_context_list(res_context_list, loss_scale_list, inputs)
             input_ids, labels, loss_scale = self._encode_context_list(res_context_list, loss_scale_list)
         self._add_dynamic_eos(input_ids, labels, loss_scale, self._encode_context_list(self.template_meta.suffix)[0])

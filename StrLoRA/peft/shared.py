@@ -13,9 +13,9 @@ class Gate(nn.Module):
         self.expert_num = peft_config.expert_num
         self.te_dim = peft_config.task_embedding_dim
 
-        #self.lora_task_embedding = nn.Embedding(self.task_num+1, self.te_dim)# 使用embedding来代替线性层
+        #self.lora_task_embedding = nn.Embedding(self.task_num+1, self.te_dim)  # Use embedding instead of a linear layer
         self.GateL = nn.Linear(self.te_dim, self.expert_num, bias=False)
-        self.act = nn.Softmax(dim=0)    # 第0维为batch size
+        self.act = nn.Softmax(dim=0)    # Dim 0 is batch size
     
     def forward(self, task_em):
 

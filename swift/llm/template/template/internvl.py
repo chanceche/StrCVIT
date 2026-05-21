@@ -78,11 +78,11 @@ class InternvlTemplate(Template):
         inputs_embeds = embedding(input_ids).to(device=device)
 
         pixel_values = inputs.get('pixel_values')
-        #然后把文本序列中所有 <IMG_CONTEXT> 占位符位置的 embedding，替换成 ViT 提取出来的视觉 token embedding。
+        # Replace embeddings at <IMG_CONTEXT> placeholders with ViT visual token embeddings.
         if pixel_values is not None:
             pixel_values = pixel_values.to(device=device)
             # rm = getattr(model.base_model, "root_model", model.base_model)
-            # rm._routing_text_embeds = None   # 先清空
+            # rm._routing_text_embeds = None   # Clear first
             vit_embeds = model.extract_feature(pixel_values).to(device=device)
             selected = (input_ids == self.processor.encode('<IMG_CONTEXT>', add_special_tokens=False)[0])
             inputs_embeds[selected] = vit_embeds.reshape(-1, vit_embeds.shape[-1]).to(dtype=inputs_embeds.dtype)

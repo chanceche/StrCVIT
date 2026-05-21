@@ -15,7 +15,7 @@ import os
 import re
 from ._smolora_eval_utils import DEFAULT_STRLORA_EMB_DIR, apply_smolora_eval_embedding
 
-# 如果需要处理视频，请取消下面两行的注释
+# If you need video processing, uncomment the two lines below
 # from decord import VideoReader, cpu
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
@@ -159,7 +159,7 @@ def load_from_hf(repo_id, filename, subfolder=None):
 # ----------------------------------------------------------------------
 
 def eval_model(args):
-    # 全局屏蔽非 Error 级别的日志
+    # Suppress logs below Error level
     transformers.logging.set_verbosity_error()
 
     model_base = os.path.expanduser(args.model_base) if args.model_base else None

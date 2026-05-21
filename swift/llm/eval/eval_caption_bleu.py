@@ -6,7 +6,7 @@ from functools import reduce
 import operator
 import math
 
-# BLEU 计算相关函数
+# BLEU computation helpers
 def fetch_data(cand, ref):
     """ Store each reference and candidate sentences as a list """
     references = []
@@ -103,43 +103,43 @@ def BLEU(candidate, references):
     bleu = geometric_mean(precisions) * bp
     return bleu
 
-# 用于评估 BLEU 分数的函数
+# Function to evaluate BLEU scores
 def eval_bleu(annotation_file, result_file):
-    # 读取 annotation-file (真实标签)
+    # Read annotation-file (ground truth)
     with open(annotation_file, 'r') as f:
         annotations = json.load(f)
     
     annotations_dict = {str(item['question_id']): item for item in annotations}
 
-    # 读取 result-file (模型预测结果)
+    # Read result-file (model predictions)
     results = [json.loads(line) for line in open(result_file)]
 
-    # 准备 BLEU 评估的输入数据
-    gts = []  # 参考答案
-    res = []  # 模型生成的文本
+    # Prepare BLEU inputs
+    gts = []  # References
+    res = []  # Model outputs
     for result in results:
         question_id = str(result['question_id'])
         if question_id in annotations_dict:
-            gts.append(annotations_dict[question_id]['answer'] + "\n")  # 加入换行符以匹配 fetch_data 的格式
-            res.append(result['text'] + "\n")  # 模型的预测结果
+            gts.append(annotations_dict[question_id]['answer'] + "\n")  # Add newline for fetch_data format
+            res.append(result['text'] + "\n")  # Model prediction
 
-    # 对每一句进行 BLEU 计算并打印结果
+    # Compute BLEU per sentence and print
     for idx, (ref, hyp) in enumerate(zip(gts, res)):
-        bleu_score = BLEU([hyp], [[ref]])  # 计算单句的 BLEU 分数
-        print(f"Sample {idx + 1} - BLEU 分数: {bleu_score:.2f}")
+        bleu_score = BLEU([hyp], [[ref]])  # Compute BLEU for one sentence
+        print(f"Sample {idx + 1} - BLEU Score: {bleu_score:.2f}")
     
-    # 总 BLEU 分数
+    # Total BLEU score
     bleu_score_total = BLEU(res, [gts])
-    print(f"总 BLEU 分数: {bleu_score_total:.2f}")
+    print(f"Total BLEU Score: {bleu_score_total:.2f}")
     
-    # 将结果写入文件
+    # Write results to file
     if args.output_dir is not None:
         output_file = os.path.join(args.output_dir, 'bleu_result.txt')
         with open(output_file, 'w') as f:
             for idx, (ref, hyp) in enumerate(zip(gts, res)):
                 bleu_score = BLEU([hyp], [[ref]])
-                f.write(f"Sample {idx + 1} - BLEU 分数: {bleu_score:.2f}\n")
-            f.write(f"总 BLEU 分数: {bleu_score_total:.2f}\n")
+                f.write(f"Sample {idx + 1} - BLEU Score: {bleu_score:.2f}\n")
+            f.write(f"Total BLEU Score: {bleu_score_total:.2f}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

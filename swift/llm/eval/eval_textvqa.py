@@ -48,7 +48,7 @@ def eval_single(annotation_file, result_file):
     evaluator = TextVQAAccuracyEvaluator()
     print('Samples: {}\nAccuracy: {:.2f}%\n'.format(len(pred_list), 100. * evaluator.eval_pred_list(pred_list)))
 
-    #将结果写入文件
+    # Write results to file
     if args.output_dir is not None:
         output_file = os.path.join(args.output_dir, 'Result.text')
         with open(output_file, 'w') as f:

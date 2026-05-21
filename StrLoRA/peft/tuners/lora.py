@@ -190,14 +190,14 @@ class LoraModel(torch.nn.Module):
             if hasattr(model_config, "to_dict"):
                 model_config = model_config.to_dict()
 
-            config = self._prepare_lora_config(config, model_config) # 添加target modules
+            config = self._prepare_lora_config(config, model_config) # Add target modules
             self.peft_config[adapter_name] = config
-        self._find_and_replace(adapter_name)# 找到要替换的模块
+        self._find_and_replace(adapter_name)# Find modules to replace
         if len(self.peft_config) > 1 and self.peft_config[adapter_name].bias != "none":
             raise ValueError(
                 "LoraModel supports only 1 adapter with bias. When using multiple adapters, set bias to 'none' for all adapters."
             )
-        mark_only_lora_as_trainable(self.model, self.peft_config[adapter_name].bias)# 仅让带有lora_的模块训练
+        mark_only_lora_as_trainable(self.model, self.peft_config[adapter_name].bias)# Train only modules with lora_
         if self.peft_config[adapter_name].inference_mode:
             _freeze_adapter(self.model, adapter_name)
 
@@ -318,15 +318,15 @@ class LoraModel(torch.nn.Module):
         key_list = [key for key, _ in self.model.named_modules()]
 
         for key in key_list:
-            # 判断模块是否在target_modules中
+            # Check whether module is in target_modules
             if not self._check_target_module_exists(lora_config, key):
                 continue
 
             is_target_modules_in_base_model = True
-            # 获取目标模块,及其父模块 
+            # Get target module and its parent
             parent, target, target_name = _get_submodules(self.model, key)
 
-            # isinstance判断是否是***实例，
+            # Use isinstance to check the target type
             if isinstance(target, LoraLayer) and isinstance(target, torch.nn.Conv2d):
                 target.update_layer_conv2d(
                     adapter_name,
@@ -353,7 +353,7 @@ class LoraModel(torch.nn.Module):
                     lora_config.init_lora_weights,
                 )
             else:
-                #为目标模块创建一个loralayer，然后用新的loralayer替换原来的模块
+                # Create a LoraLayer for the target and replace the original module
                 new_module = self._create_new_module(lora_config, adapter_name, target)
                 self._replace_module(parent, target_name, new_module, target)
 
@@ -365,7 +365,7 @@ class LoraModel(torch.nn.Module):
 
     def _replace_module(self, parent_module, child_name, new_module, old_module):
         setattr(parent_module, child_name, new_module)
-        # 保存旧权重
+        # Preserve old weights
 
         new_module.weight = old_module.weight
         if hasattr(old_module, "bias"):
@@ -687,15 +687,15 @@ class LoraLayer:
             lora_dropout_layer = nn.Dropout(p=lora_dropout)
         else:
             lora_dropout_layer = nn.Identity()
-        # 添加dropout_layer
+        # Add dropout layer
         self.lora_dropout.update(nn.ModuleDict({adapter_name: lora_dropout_layer}))
         # Actual trainable parameters
-        #  配置 LoRA 的低秩矩阵 A 和 B
+        # Configure LoRA low-rank matrices A and B
         if r > 0:
             self.lora_A.update(nn.ModuleDict({adapter_name: nn.Linear(self.in_features, r, bias=False)}))
             self.lora_B.update(nn.ModuleDict({adapter_name: nn.Linear(r, self.out_features, bias=False)}))
             self.scaling[adapter_name] = lora_alpha / r
-        # 初始化lora权重
+        # Initialize LoRA weights
         if init_lora_weights:
             self.reset_lora_parameters(adapter_name)
         self.to(self.weight.device)

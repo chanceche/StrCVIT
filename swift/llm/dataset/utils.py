@@ -316,29 +316,29 @@ class EncodePreprocessor(RowPreprocessor):
         return self.template.encode(row, return_length=True)
 
 def get_sample_embedding(text_or_ids):
-    # TODO: 实现你的 embedding 提取逻辑
+    # TODO: implement your embedding extraction logic
     # return embedding_model.encode(text_or_ids)
-    return [0.1] * 64 # 示例：返回 64 维向量
+    return [0.1] * 64 # Example: return a 64-dim vector
 
 class AddTextEncodePreprocessor(EncodePreprocessor):
     def preprocess(self, row):
-        # 1. 调用父类方法进行常规的 tokenize
+        # 1. Call base method to tokenize
         res = super().preprocess(row)
         
-        # 2. 如果 tokenize 成功（res 不为 None），注入 embedding
+        # 2. If tokenize succeeds (res is not None), inject embedding
         if res:
-            # 方式 A: 使用原始文本 (row['messages'] 或 row['query'])
+            # Option A: use raw text (row['messages'] or row['query'])
             # messages = row.get('messages', [])
             # text = messages[0]['content'] if messages else ""
             
-            # 方式 B: 使用 tokenize 后的 input_ids (提取部分特征)
+            # Option B: use tokenized input_ids (extract partial features)
             input_ids = res.get('input_ids', [])
-            # 例如：解码回文本，或者直接取前 N 个 token
+            # Example: decode back to text, or take the first N tokens
             
-            # 计算 embedding
+            # Compute embedding
             embedding = get_sample_embedding(input_ids)
             
-            # 3. 保存为新的一列
+            # 3. Save as a new column
             res['text_embedding'] = embedding
             
         return res

@@ -25,15 +25,15 @@ def cider_acc(result_file):
     with open(result_file, "r", encoding="utf-8") as f:
         for line in f:
             if line.startswith("总 CIDEr 分数"):
-                # 提取冒号后的数值，去掉百分号
+                # Extract the value after the colon and strip the percent sign
                 value = line.split(":")[1].strip().replace("%", "")
                 return float(value)
 
 def gqa_acc(result_file):
     with open(result_file, "r", encoding="utf-8") as f:
-        text = f.read()  # 读取整行内容
+        text = f.read()  # Read full content
 
-    # 用正则匹配 Accuracy: 后面的数字（支持小数）
+    # Match the number after "Accuracy:" (supports decimals)
     match = re.search(r'Accuracy:\s*([\d.]+)%', text)
     if match:
         return float(match.group(1))
@@ -64,10 +64,10 @@ if __name__ == '__main__':
 
     results['AP'] = sum(results.values()) / len(results)
 
-    # 保存为 JSON 文件
+    # Save as JSON file
     with open(os.path.join(args.result_dir, 'Ap_result.json'), 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
 
-    # 打印结果
+    # Print results
     for k, v in results.items():
         print(f"{k}: {v:.2f}")

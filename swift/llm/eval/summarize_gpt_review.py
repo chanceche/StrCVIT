@@ -43,7 +43,7 @@ def main(args):
     df = pd.DataFrame.from_dict(result).filter(['conversation', 'detailed_description', 'chest_xray', 'mri', 'histology', 'gross', 'ct_scan', 'overall'])
     print(df)
 
-    # 获取 source-file 文件所在目录并保存 results.txt
+    # Get source-file directory and save results.txt
     source_file_path = args.scores_file
     output_dir = os.path.dirname(os.path.abspath(source_file_path))
     save_path = os.path.join(output_dir, "results.txt")

@@ -469,7 +469,7 @@ class PeftModel(PushToHubMixin, torch.nn.Module):
                 f"Cannot combine adapters with different peft types. "
                 f"Found {self.peft_type} and {peft_config.peft_type}."
             )
-        # 创建peft字典
+        # Create the PEFT config dict
         self.peft_config[adapter_name] = peft_config
         if isinstance(peft_config, PromptLearningConfig):
             if hasattr(self.config, "to_dict"):
@@ -480,7 +480,7 @@ class PeftModel(PushToHubMixin, torch.nn.Module):
             peft_config = _prepare_prompt_learning_config(peft_config, dict_config)
             self._setup_prompt_encoder(adapter_name)
         else:
-            # 加载对应的微调模型
+            # Load the matching fine-tuned adapter
             self.base_model.add_adapter(adapter_name, peft_config)
 
         self.set_additional_trainable_modules(peft_config, adapter_name)
@@ -1919,7 +1919,7 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
 
     def _extract_routing_text(self, question: Union[str, List[str]]) -> str:
         """
-        从 question 中抽取 user 侧文本（去掉 <image>），用于路由。
+        Extract the user-side text from question (strip <image>) for routing.
 
         """
         texts = []
@@ -1940,9 +1940,9 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
     def _build_text_embeds(self, tokenizer, routing_text: str) -> torch.Tensor:
         """
         routing_text -> text_ids -> text_embeds
-        返回 shape: [B=1, Lt, H]
+        Return shape: [B=1, Lt, H]
         """
-        # 注意：这里不要加图像 token，只做纯文本
+        # Note: do not add image tokens here, text only
         tok = tokenizer(routing_text, return_tensors="pt", add_special_tokens=True)
         text_ids = tok["input_ids"].to(self.device)
 
@@ -1954,8 +1954,8 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
 
     def _extract_batch_routing_texts(self, questions: List[str]) -> List[str]:
         """
-        从 batch questions 中逐条抽取文本（去掉 <image>），用于 batch 路由。
-        返回长度与输入一致的文本列表。
+        Extract text from each batch question (strip <image>) for batch routing.
+        Return a text list with the same length as input.
         """
         texts = []
         for item in questions:
@@ -1969,7 +1969,7 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
     def _build_batch_text_embeds(self, tokenizer, routing_texts: List[str]) -> torch.Tensor:
         """
         batch routing_texts -> text_ids -> text_embeds
-        返回 shape: [B, Lt, H]
+        Return shape: [B, Lt, H]
         """
         safe_texts = [text if text else " " for text in routing_texts]
         tok = tokenizer(
@@ -2014,7 +2014,7 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
                 **kwargs,
             )
         finally:
-            # ✅ 关键：保证一定清理
+            # Key: always clean up
             self.base_model._routing_text_embeds = None
 
 
@@ -2052,5 +2052,5 @@ class PeftModelForCausalLMLORAMOE(PeftModelForCausalLM):
                 **kwargs,
             )
         finally:
-            # ✅ 关键：保证一定清理
+            # Key: always clean up
             self.base_model._routing_text_embeds = None

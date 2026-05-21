@@ -22,7 +22,7 @@ def eval_single(test_file, result_file):
     false_answers = []
     for index in tqdm(range(total)):
         text = answers[index]['fine_label']
-        # text = answers[index]['coarse_label'] # 超类
+        # text = answers[index]['coarse_label'] # Super class
         label = results[index]
         if (text in label['text']) or (label['text'] in text):
             right += 1
@@ -31,7 +31,7 @@ def eval_single(test_file, result_file):
             false_answers.append(label)
         
     print('Samples: {}\nAccuracy: {:.2f}%\n'.format(total, 100. * right / total))
-    #将结果写入文件
+    # Write results to file
     if args.output_dir is not None:
         output_file = os.path.join(args.output_dir, 'Result.text')
         with open(output_file, 'w') as f:

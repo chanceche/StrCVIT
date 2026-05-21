@@ -9,12 +9,12 @@ class ReportGenerator:
         self.lines = []
         
     def log(self, message=""):
-        """同时打印到控制台和添加到报告列表"""
+        """Print to console and append to report list."""
         print(message)
         self.lines.append(message)
         
     def save(self):
-        """将所有内容写入文件"""
+        """Write all content to file."""
         try:
             with open(self.save_path, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(self.lines))
@@ -25,12 +25,12 @@ class ReportGenerator:
 def compare_results(full_path, proxy_path, label, logger):
     logger.log(f"\n{'='*20} {label} Set Comparison {'='*20}")
     
-    # 检查文件是否存在
+    # Check if files exist
     if not os.path.exists(full_path) or not os.path.exists(proxy_path):
         logger.log(f"❌ 找不到文件:\n  Full: {full_path}\n  Proxy: {proxy_path}")
         return
 
-    # 读取数据
+    # Read data
     try:
         with open(full_path, 'r', encoding='utf-8') as f:
             full_res = json.load(f)
@@ -40,7 +40,7 @@ def compare_results(full_path, proxy_path, label, logger):
         logger.log(f"❌ 读取 JSON 失败: {e}")
         return
 
-    # 打印表头
+    # Print header
     header = f"{'Dataset':<15} | {'Full Set':<10} | {'Proxy Set':<10} | {'Diff (%)':<10} | {'Status'}"
     logger.log(header)
     logger.log("-" * 75)
@@ -55,16 +55,16 @@ def compare_results(full_path, proxy_path, label, logger):
         val_full = full_res[k]
         val_proxy = proxy_res[k]
 
-        # ================== 修改逻辑开始 ==================
-        # 如果字段是 TextCaps，强制将 Full Set 的值替换为 Proxy Set 的值
-        # 这样 Diff 会变为 0，且显示为 Perfect
+        # ================== Logic change start ==================
+        # If the field is TextCaps, force Full Set to Proxy Set
+        # This makes Diff 0 and shows Perfect
         if k == "TextCaps":
             val_full = val_proxy
-        # ================== 修改逻辑结束 ==================
+        # ================== Logic change end ==================
 
         diff = abs(val_full - val_proxy)
         
-        # 状态判定
+        # Status
         if diff < 1.0:
             status = "✅ Perfect"
         elif diff < 2.0:
@@ -74,7 +74,7 @@ def compare_results(full_path, proxy_path, label, logger):
             
         logger.log(f"{k:<15} | {val_full:<10.2f} | {val_proxy:<10.2f} | {diff:<10.2f} | {status}")
         
-        # 不统计平均值的误差作为最大误差
+        # Do not use averages when computing max diff
         if k not in ['AP', 'MIF', 'AVG']: 
             max_diff = max(max_diff, diff)
 
@@ -88,13 +88,13 @@ def compare_results(full_path, proxy_path, label, logger):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # 默认路径，可根据实际情况修改
+    # Default path; adjust as needed
     parser.add_argument("--result-dir", type=str, default="<STRCVIT_METHODS_DIR>/results/StrCVIT/data_001/internvl3_5_8b_lora_r64_mlp")
     args = parser.parse_args()
     
     BASE_DIR = args.result_dir
     
-    # 定义报告保存路径
+    # Define report save path
     report_file = os.path.join(BASE_DIR, "consistency_report.txt")
     logger = ReportGenerator(report_file)
     
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     logger.log(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.log(f"Dir:  {BASE_DIR}")
     
-    # 1. 对比 AP (Accuracy / CIDER)
+    # 1. Compare AP (Accuracy / CIDER)
     compare_results(
         os.path.join(BASE_DIR, "Ap_result.json"), 
         os.path.join(BASE_DIR, "Ap_proxy_result.json"),
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         logger=logger
     )
 
-    # 2. 对比 Instruction Following (MIF)
+    # 2. Compare Instruction Following (MIF)
     compare_results(
         os.path.join(BASE_DIR, "instruction_result.json"), 
         os.path.join(BASE_DIR, "instruction_proxy_result.json"),
@@ -118,5 +118,5 @@ if __name__ == "__main__":
         logger=logger
     )
     
-    # 保存文件
+    # Save file
     logger.save()

@@ -50,7 +50,7 @@ if __name__ == "__main__":
             pred_text = 'FAILED'
         else:
             pred = predictions[prob_id]
-            pred_text = pred['text'].strip()  # 去除首尾空格
+            pred_text = pred['text'].strip()  # Strip leading/trailing whitespace
 
         # Check if the prediction is a single option
         if is_single_option(pred_text, args.options):

@@ -151,38 +151,38 @@ def load_model_from_previous_task(model, previous_task_model_path, init_missing_
     non_lora_trainables = load_from_local_or_hf(previous_task_model_path, 'non_lora_trainables.bin')
     if any(k.startswith('model.model.') for k in non_lora_trainables):
         non_lora_trainables = {(k[6:] if k.startswith('model.') else k): v for k, v in non_lora_trainables.items()}
-    # 检查是否使用了 DeepSpeed
-    is_deepspeed = hasattr(model, 'parameters') and any(p.is_cuda for p in model.parameters()) # 简单判断
+    # Check whether DeepSpeed is used
+    is_deepspeed = hasattr(model, 'parameters') and any(p.is_cuda for p in model.parameters()) # Simple check
     try:
         import deepspeed
-        # 检查是否处于 ZeRO 阶段 3
-        # 这里做一个简单的保护，只要能导入 deepspeed 就尝试用 GatheredParameters
+        # Check whether in ZeRO stage 3
+        # Simple guard: if deepspeed imports, try GatheredParameters
         use_deepspeed_gather = True
     except ImportError:
         use_deepspeed_gather = False
 
     if use_deepspeed_gather:
-        # 找出需要赋值的参数对象
+        # Find parameters to update
         target_params = []
         param_names = []
         
-        # 建立映射：从模型中找到对应的参数对象
-        # 注意：model.named_parameters() 可能带有 module. 前缀，视包装情况而定
+        # Build mapping: find matching params in the model
+        # Note: model.named_parameters() may have a module. prefix depending on wrapping
         for name, param in model.named_parameters():
-            # 简单清理一下 name 以便匹配 (去除 potential DDP wrapper prefix)
+            # Clean name for matching (remove potential DDP wrapper prefix)
             clean_name = name.replace("module.", "")
             if clean_name in non_lora_trainables:
                 target_params.append(param)
                 param_names.append(clean_name)
         
         if len(target_params) > 0:
-            # 使用 DeepSpeed 上下文聚合参数 (解决 Size([0]) 问题)
+            # Use DeepSpeed context to gather params (fix Size([0]) issue)
             with deepspeed.zero.GatheredParameters(target_params, modifier_rank=0):
                 if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
                     for name, param in zip(param_names, target_params):
                         if name in non_lora_trainables:
                             weight_data = non_lora_trainables[name]
-                            # 确保设备和类型匹配
+                            # Ensure device and dtype match
                             weight_data = weight_data.to(device=param.device, dtype=param.dtype)
                             param.data.copy_(weight_data)
                     print(f"DeepSpeed: Loaded {len(target_params)} MLP parameters.")
@@ -190,7 +190,7 @@ def load_model_from_previous_task(model, previous_task_model_path, init_missing_
             print("Warning: No matching MLP keys found in model parameters.")
             
     else:
-        # 非 DeepSpeed 环境，直接加载
+        # Non-DeepSpeed environment: load directly
         model.load_state_dict(non_lora_trainables, strict=False)
         print("Standard: Loaded non-LoRA weights.")
 

@@ -166,7 +166,7 @@ class BaseArguments(CompatArguments, GenerationArguments, QuantizeArguments, Dat
         self.rank, self.local_rank, self.global_world_size, self.local_world_size = get_dist_setting()
         logger.info(f'rank: {self.rank}, local_rank: {self.local_rank}, '
                     f'world_size: {self.global_world_size}, local_world_size: {self.local_world_size}')
-        if self.train_type not in extra_tuners: # 加入tuner
+        if self.train_type not in extra_tuners: # Add tuner
             for adapter in self.adapters:
                 assert self._check_is_adapter(adapter), (
                     f'`{adapter}` is not an adapter, please try using `--model` to pass it.')

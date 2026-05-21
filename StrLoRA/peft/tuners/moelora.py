@@ -576,9 +576,9 @@ class MoEGate(nn.Module):
     def __init__(self, input_size, expert_num):
 
         super().__init__()
-        # 使用embedding来代替线性层
+        # Use embedding instead of a linear layer
         self.GateL = nn.Linear(input_size, expert_num, bias=False)
-        self.act = nn.Softmax(dim=1)    # 第0维为batch size
+        self.act = nn.Softmax(dim=1)    # Dim 0 is batch size
     
     def forward(self, x):
 

@@ -135,7 +135,7 @@ def get_model_tokenizer_internvl(model_dir: str,
             model.language_model.output.state.force_no_igemmlt = True
 
     if model is not None:
-        use_submodel_func(model, 'language_model') # 把内部子模型的能力（方法）嫁接到外部包装类上
+        use_submodel_func(model, 'language_model') # Attach internal submodel methods to the outer wrapper
         patch_output_clone(model.language_model.get_input_embeddings())
 
     return model, tokenizer
