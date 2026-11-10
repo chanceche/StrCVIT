@@ -17,7 +17,6 @@ swift sft \
     --load_from_cache_file true \
     --expert_num 4 \
     --topk 2 \
-    --subtopk 1\
     --attn_proj_dim 64 \
     --train_type strlora \
     --task_embedding_dim 4096 \

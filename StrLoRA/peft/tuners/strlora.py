@@ -589,7 +589,7 @@ class StrLoRALinear(nn.Linear, StrLoRALayer):
         self._last_router_distill_loss = None
 
     def _use_router_distill(self):
-        return self.sample_router_distill_lambda > 0 and self.subtopk > 0
+        return self.sample_router_distill_lambda > 0 and (self.attn_proj_dim > 0 or self.subtopk > 0)
 
     def _clone_ema_tensor(
         self,
@@ -745,7 +745,6 @@ class StrLoRALinear(nn.Linear, StrLoRALayer):
             logits = logits.masked_fill(~expert_mask.bool(), float("-inf"))
 
         router = torch.softmax(logits, dim=-1)
-        router = self._straight_through_topk(router, getattr(self, "subtopk", 0))
 
         return router, logits
 
@@ -903,7 +902,7 @@ class StrLoRALinear(nn.Linear, StrLoRALayer):
             else:
                 raise RuntimeError("text_embeds is required for routing but not found in root_model._routing_text_embeds")
             
-            if self.subtopk > 0:
+            if self.attn_proj_dim > 0 or self.subtopk > 0:
                 expert_mask = (router > 0).to(router.dtype)  # [B, L, E]
                 if self.attn_proj_dim > 0:
                     attn_router, _ = self._attn_token_router(
@@ -931,10 +930,6 @@ class StrLoRALinear(nn.Linear, StrLoRALayer):
                     # Fall back to dense token routing if a mask is empty.
                     denom = masked.sum(dim=-1, keepdim=True)
                     masked = torch.where(denom > 0, masked / (denom + 1e-9), sub_router_probs)
-
-                    # Optional token-level top-k within the allowed expert set.
-                    if getattr(self, "subtopk", 1) and self.subtopk > 0 and self.subtopk < self.expert_num:
-                        masked = self._straight_through_topk(masked, self.subtopk)
 
                     # Final token-level router.
                     router = masked

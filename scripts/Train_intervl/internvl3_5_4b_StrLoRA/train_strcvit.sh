@@ -68,7 +68,6 @@ swift sft \
     --load_from_cache_file true \
     --lr_scheduler_type constant \
     --topk 2 \
-    --subtopk 1\
     --attn_proj_dim 64 \
     $freeze_attn_arg \
     --sample_router_distill_lambda 0.1 \
