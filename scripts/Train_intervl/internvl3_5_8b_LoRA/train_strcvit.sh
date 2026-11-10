@@ -51,8 +51,8 @@ swift sft \
     --learning_rate 2e-05 \
     --vit_lr 1e-5 \
     --aligner_lr 1e-5 \
-    --lora_rank 64 \
-    --lora_alpha 128 \
+    --lora_rank 16 \
+    --lora_alpha 32 \
     --gradient_accumulation_steps 4 \
     --save_total_limit 2 \
     --logging_steps 5 \
